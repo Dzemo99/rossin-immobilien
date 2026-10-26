@@ -1,0 +1,535 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Rossin Immobilien – Immobilienvermittlung in Göttingen</title>
+<meta name="description" content="Rossin Immobilien: Persönliche, engagierte und zuverlässige Immobilienvermittlung in Göttingen und der Region – Vermietung von Gewerbeimmobilien, Verkauf von Wohn- und Geschäftshäusern. Objekte in 3D erleben.">
+<link rel="icon" href="/logo.webp" type="image/webp">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;1,9..144,400&family=Inter:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css">
+<script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
+<style>
+/* Layout: dunkle, ruhige Fläche; 3D-Hero als sticky Bühne, danach klassische Sektionen. Dark-only by design (Immobilien-Showcase). */
+:root {
+  --bg:#0b0c0f; --bg-2:#111318; --bg-3:#181b21; --ink:#f2efe9; --ink-2:#b9b4aa; --ink-3:#7d7870;
+  --line:rgba(255,255,255,.08); --gold:#c9a86a; --gold-2:#e5c889;
+  --serif:'Fraunces',Georgia,serif; --sans:'Inter',system-ui,-apple-system,sans-serif;
+  --r:18px; --max:1240px; --pad:clamp(20px,5vw,72px); color-scheme:dark;
+}
+*{box-sizing:border-box} html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:16px;line-height:1.55;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+a{color:inherit;text-decoration:none}
+h1,h2,h3{font-family:var(--serif);font-weight:400;letter-spacing:-.01em;margin:0;line-height:1.05;text-wrap:balance}
+h2{font-size:clamp(34px,4.6vw,60px)} h2 em,h1 span{font-style:italic;color:var(--gold-2)}
+section{padding-block:clamp(72px,10vw,140px);padding-left:max(var(--pad),env(safe-area-inset-left,0px));padding-right:max(var(--pad),env(safe-area-inset-right,0px));max-width:var(--max);margin:0 auto}
+.eyebrow{font-size:12px;letter-spacing:.22em;text-transform:uppercase;color:var(--gold);margin:0 0 14px;font-weight:500}
+.lede{color:var(--ink-2);font-size:clamp(16px,1.3vw,19px);max-width:60ch}
+.section-head{margin-bottom:44px} .section-head .lede{margin-top:14px}
+.btn{display:inline-flex;align-items:center;gap:8px;padding:14px 22px;border-radius:999px;font-weight:500;font-size:15px;border:1px solid transparent;cursor:pointer;transition:transform .2s,background .2s,border-color .2s;font-family:var(--sans)}
+.btn:hover{transform:translateY(-1px)} .btn:focus-visible,.chip:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+.btn-primary{background:var(--gold);color:#1a1407} .btn-primary:hover{background:var(--gold-2)}
+.btn-ghost{border-color:rgba(255,255,255,.18);color:var(--ink);background:rgba(255,255,255,.03)} .btn-ghost:hover{border-color:rgba(255,255,255,.4)}
+.btn-sm{padding:10px 16px;font-size:14px}
+.chip{padding:8px 14px;border-radius:999px;border:1px solid var(--line);background:transparent;color:var(--ink-2);font:500 13px var(--sans);cursor:pointer;transition:all .2s}
+.chip:hover{border-color:rgba(255,255,255,.3);color:var(--ink)} .chip.is-on{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.link{color:var(--gold-2);font-weight:500;font-size:14px}
+/* Nav */
+.nav{position:fixed;top:env(safe-area-inset-top,0px);left:0;right:0;z-index:50;display:flex;align-items:center;gap:28px;padding:18px max(var(--pad),env(safe-area-inset-right,0px)) 18px max(var(--pad),env(safe-area-inset-left,0px));transition:background .3s,border-color .3s;border-bottom:1px solid transparent}
+.nav.is-solid{background:rgba(11,12,15,.72);backdrop-filter:blur(14px);border-color:var(--line)}
+.brand{font-family:var(--serif);font-size:20px;letter-spacing:.08em} .brand span{color:var(--gold);font-style:italic}
+.brand small{font-family:var(--sans);font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--ink-3);margin-left:6px}
+.nav nav{display:flex;gap:26px;margin-left:auto;font-size:14px;color:var(--ink-2)} .nav nav a:hover{color:var(--ink)}
+.burger{display:none;margin-left:auto;width:40px;height:40px;background:none;border:0;cursor:pointer;flex-direction:column;gap:6px;justify-content:center;align-items:center}
+.burger span{width:22px;height:1.5px;background:var(--ink);display:block}
+/* Hero */
+.hero{padding:0;max-width:none;height:300vh;position:relative}
+.hero-sticky{position:sticky;top:0;height:100vh;overflow:hidden}
+.hero-sticky canvas{display:block;width:100%;height:100%}
+.hero-overlay{position:absolute;inset:0;pointer-events:none;display:grid;align-items:end;padding:0 max(var(--pad),env(safe-area-inset-right,0px)) 10vh max(var(--pad),env(safe-area-inset-left,0px));max-width:var(--max);margin:0 auto}
+.hero-copy{grid-area:1/1;opacity:0;transform:translateY(18px);transition:opacity .6s,transform .6s;max-width:640px}
+.hero-copy.is-active{opacity:1;transform:none}
+.hero-copy h1{font-size:clamp(44px,7vw,96px)} .hero-copy .lede{margin-top:18px}
+.hero-cta{display:flex;gap:12px;margin-top:28px;pointer-events:auto;flex-wrap:wrap}
+.scroll-hint{position:absolute;right:var(--pad);bottom:36px;font-size:12px;letter-spacing:.2em;text-transform:uppercase;color:var(--ink-3);display:flex;align-items:center;gap:12px}
+.scroll-hint span{width:1px;height:48px;background:linear-gradient(var(--gold),transparent);display:block;animation:drop 1.8s infinite}
+@keyframes drop{0%{transform:scaleY(0);transform-origin:top}50%{transform:scaleY(1);transform-origin:top}51%{transform-origin:bottom}100%{transform:scaleY(0);transform-origin:bottom}}
+/* Listings */
+.filters{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:28px}
+.card-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:22px}
+.card{background:var(--bg-2);border:1px solid var(--line);border-radius:var(--r);overflow:hidden;transition:transform .3s,border-color .3s;min-width:0}
+.card:hover{transform:translateY(-4px);border-color:rgba(201,168,106,.35)}
+.card-media{position:relative;aspect-ratio:4/3;overflow:hidden;max-width:100%} .card.has-gallery .card-media{cursor:zoom-in}
+.card-media img{width:100%;height:100%;object-fit:cover;display:block}
+.card-art{width:100%;height:100%;background:radial-gradient(120% 80% at 80% 10%,hsl(var(--h) 40% 30%/.9),transparent 60%),linear-gradient(160deg,hsl(var(--h) 25% 18%),hsl(calc(var(--h) + 40) 20% 10%))}
+.card-art::after{content:'';position:absolute;inset:auto 14% 0 14%;height:55%;background:linear-gradient(to top,rgba(0,0,0,.35),transparent);clip-path:polygon(0 100%,0 35%,20% 35%,20% 15%,45% 15%,45% 40%,70% 40%,70% 5%,100% 5%,100% 100%)}
+.card-tag{position:absolute;top:14px;left:14px;background:rgba(11,12,15,.7);backdrop-filter:blur(8px);padding:6px 10px;border-radius:999px;font-size:12px;font-weight:500}
+.card-demo{position:absolute;top:14px;right:14px;background:rgba(251,191,36,.9);color:#1a1407;padding:5px 9px;border-radius:999px;font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase}
+.card-count{position:absolute;bottom:12px;right:14px;background:rgba(11,12,15,.7);backdrop-filter:blur(8px);padding:5px 9px;border-radius:999px;font-size:12px}
+.card-body{padding:20px 22px 22px} .card-loc{font-size:13px;color:var(--ink-3);margin:0 0 6px} .card h3{font-size:24px}
+.card-facts{display:flex;gap:14px;font-size:13px;color:var(--ink-2);margin:12px 0 18px;flex-wrap:wrap} .card-facts span+span::before{content:'·';margin-right:14px;color:var(--ink-3)}
+.card-foot{display:flex;justify-content:space-between;align-items:center;border-top:1px solid var(--line);padding-top:16px;gap:12px;flex-wrap:wrap} .card-foot strong{font-size:18px;font-weight:600}
+/* Explorer */
+.explorer{max-width:none;background:var(--bg-2);border-block:1px solid var(--line)} .explorer>*{max-width:var(--max);margin-inline:auto}
+.explorer-grid{display:grid;grid-template-columns:1.5fr 1fr;gap:28px;align-items:stretch}
+.explorer-canvas{position:relative;border-radius:var(--r);overflow:hidden;border:1px solid var(--line);min-height:560px;background:#101216;min-width:0}
+.explorer-canvas canvas{position:absolute;inset:0;width:100%;height:100%;display:block;touch-action:none}
+.explorer-tools{position:absolute;left:16px;bottom:16px;display:flex;gap:8px}
+.explorer-panel{display:flex;flex-direction:column;gap:18px;min-width:0}
+.floor-list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px}
+.floor-btn{width:100%;display:grid;grid-template-columns:10px 1fr auto;align-items:center;gap:14px;text-align:left;padding:12px 16px;border-radius:12px;border:1px solid transparent;background:transparent;color:var(--ink-2);cursor:pointer;font:500 14px var(--sans);transition:all .15s}
+.floor-btn:hover,.floor-btn.is-hover{background:rgba(255,255,255,.04);color:var(--ink)}
+.floor-btn.is-selected{background:var(--bg-3);border-color:rgba(201,168,106,.4);color:var(--ink)}
+.floor-btn .dot{width:8px;height:8px;border-radius:50%;display:block} .floor-type{font-size:12px;color:var(--ink-3)}
+.unit-card{background:var(--bg-3);border:1px solid var(--line);border-radius:var(--r);padding:24px;animation:fade .35s}
+@keyframes fade{from{opacity:0;transform:translateY(6px)}}
+.unit-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+.status{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--c);font-weight:600}
+.status::before{content:'';display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--c);margin-right:8px}
+.unit-price{font-weight:600;font-size:18px} .unit-card h3{font-size:30px}
+.unit-type{color:var(--gold-2);margin:4px 0 18px;font-size:14px}
+.unit-facts{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:0 0 16px;padding:14px 0;border-block:1px solid var(--line)}
+.unit-facts dt{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-3)} .unit-facts dd{margin:4px 0 0;font-size:15px;font-weight:500;font-variant-numeric:tabular-nums}
+.unit-desc{color:var(--ink-2);font-size:15px} .unit-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}
+/* About */
+.about{display:grid;grid-template-columns:1fr 1.4fr;gap:56px;align-items:center}
+.about-card{background:#fff;border-radius:var(--r);aspect-ratio:1;display:grid;place-items:center;padding:48px;max-width:100%} .about-card img{width:100%;max-width:320px}
+.about-text .lede+.lede{margin-top:12px}
+.about-facts{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin:28px 0}
+.about-facts div{border-top:1px solid var(--gold);padding-top:12px;display:grid;gap:4px} .about-facts strong{font-family:var(--serif);font-size:20px;font-weight:400} .about-facts span{font-size:13px;color:var(--ink-2)}
+.about-person{color:var(--ink-2);font-size:14px}
+/* Teasers */
+.teaser{display:grid;grid-template-columns:1fr 1fr;gap:56px;align-items:center}
+.ticks{list-style:none;padding:0;margin:24px 0 0;display:grid;gap:10px;color:var(--ink-2)} .ticks li::before{content:'—';color:var(--gold);margin-right:12px}
+.teaser-visual{position:relative;aspect-ratio:4/3;border-radius:var(--r);border:1px solid var(--line);overflow:hidden;background:var(--bg-2);display:grid;place-items:center;max-width:100%}
+.coming{position:absolute;bottom:18px;left:18px;font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-3);background:rgba(11,12,15,.6);padding:6px 10px;border-radius:999px}
+.map-grid{position:absolute;inset:0;background-image:linear-gradient(var(--line) 1px,transparent 1px),linear-gradient(90deg,var(--line) 1px,transparent 1px);background-size:48px 48px;transform:perspective(600px) rotateX(55deg) scale(1.6);transform-origin:50% 80%;mask-image:linear-gradient(to top,black 30%,transparent)}
+.pin{position:absolute;width:14px;height:14px;border-radius:50%;background:var(--gold);box-shadow:0 0 0 6px rgba(201,168,106,.2),0 0 24px var(--gold)}
+.tour-ring{width:58%;aspect-ratio:1;border-radius:50%;border:1px dashed rgba(201,168,106,.5);background:radial-gradient(circle,rgba(201,168,106,.18),transparent 65%);animation:spin 24s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+/* Contact */
+.contact{display:grid;grid-template-columns:1fr 1.2fr;gap:56px;max-width:none;background:var(--bg-2);border-top:1px solid var(--line)}
+.contact>*{max-width:560px;min-width:0} .contact-text{justify-self:end;width:100%}
+address{font-style:normal;color:var(--ink-2);margin-top:28px;line-height:1.8} address .hours{color:var(--ink-3);font-size:14px}
+.contact-form{display:grid;gap:16px;width:100%} .contact-form .row{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.contact-form label{display:grid;gap:6px;font-size:13px;color:var(--ink-2)}
+.contact-form input,.contact-form select,.contact-form textarea{background:var(--bg-3);border:1px solid var(--line);border-radius:12px;padding:13px 14px;color:var(--ink);font:15px var(--sans);outline:none;transition:border-color .2s;width:100%}
+.contact-form input:focus,.contact-form select:focus,.contact-form textarea:focus{border-color:var(--gold)}
+.consent{display:flex!important;gap:10px;align-items:flex-start;font-size:12px!important} .consent input{width:auto;margin-top:3px}
+.form-msg{font-size:14px;margin:0;color:#4ade80}
+/* Footer */
+.footer{display:flex;justify-content:space-between;align-items:flex-end;gap:24px;padding:40px max(var(--pad),env(safe-area-inset-right,0px)) 40px max(var(--pad),env(safe-area-inset-left,0px));border-top:1px solid var(--line);color:var(--ink-3);font-size:13px;flex-wrap:wrap}
+.footer p{margin:8px 0 0} .footer-brand img{background:#fff;padding:10px 14px;border-radius:12px;display:block;width:120px}
+.footer-links{display:flex;gap:20px;flex-wrap:wrap} .footer-links a:hover{color:var(--ink)}
+/* Lightbox */
+.lightbox{position:fixed;inset:0;z-index:100;background:rgba(5,6,8,.92);display:grid;place-items:center;padding:20px;animation:fade .2s}
+.lightbox-inner{position:relative;width:min(1100px,100%)} .lightbox-inner>img{width:100%;max-height:78vh;object-fit:contain;border-radius:12px;background:#000;display:block}
+.lb-nav,.lb-close{position:absolute;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);color:#fff;width:44px;height:44px;border-radius:50%;font-size:26px;line-height:1;cursor:pointer;display:grid;place-items:center;backdrop-filter:blur(6px)}
+.lb-nav:hover,.lb-close:hover{background:rgba(255,255,255,.22)} .lb-prev{left:12px;top:38vh} .lb-next{right:12px;top:38vh} .lb-close{top:-8px;right:-8px;font-size:22px}
+.lb-thumbs{display:flex;gap:8px;margin-top:12px;overflow-x:auto;padding-bottom:4px}
+.lb-thumbs button{flex:0 0 auto;width:72px;height:54px;border-radius:8px;overflow:hidden;border:2px solid transparent;padding:0;background:none;cursor:pointer;opacity:.6} .lb-thumbs button.is-on{border-color:var(--gold);opacity:1} .lb-thumbs img{width:100%;height:100%;object-fit:cover}
+.hero-video{height:520vh}.hero-video .hero-sticky{background:#efede8}
+.hero-canvas{position:absolute;inset:0;width:100%;height:100%;display:block;opacity:0;transition:opacity .6s;will-change:contents}.hero-canvas.is-ready{opacity:1}
+.hero-video .hero-overlay{align-items:start;padding-top:16vh}.hero-video .hero-copy{max-width:560px}
+.hero-video h1{color:#15130f}.hero-video h1 span{color:#a8863f}.hero-video .lede{color:#4a463f}.hero-video .eyebrow{color:#a8863f}
+.hero-video .btn-ghost{border-color:rgba(0,0,0,.25);color:#15130f;background:rgba(255,255,255,.4)}
+.hero-video .scroll-hint{color:#6b655b}.hero-video .scroll-hint span{background:linear-gradient(#a8863f,transparent)}
+.nav.on-light:not(.is-solid){color:#15130f}.nav.on-light:not(.is-solid) nav{color:#4a463f}.nav.on-light:not(.is-solid) .brand small{color:#6b655b}
+@media (max-width:720px){.hero-video{height:300vh}.hero-video .hero-overlay{padding-top:12vh}}
+.hero-progress{position:absolute;left:0;right:0;bottom:0;height:3px;background:rgba(0,0,0,.08);z-index:3}.hero-progress span{display:block;height:100%;background:#a8863f;transition:width .2s}
+.map-visual{background:#1b2230 url(map-goettingen.jpg) center/cover no-repeat}#map{position:absolute;inset:0}.maplibregl-ctrl-attrib{font-size:10px}.map-visual::after{content:'';position:absolute;left:0;right:0;bottom:0;height:40%;background:linear-gradient(to top,rgba(11,12,15,.5),transparent);pointer-events:none}
+.map-caption{position:absolute;left:18px;bottom:18px;z-index:2;font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink)}
+.tour-visual{aspect-ratio:16/10;cursor:grab;touch-action:none}#panoCanvas{position:absolute;inset:0;width:100%;height:100%;display:block}.tour-rooms{position:absolute;left:14px;top:14px;z-index:3;display:flex;gap:6px;flex-wrap:wrap}
+.tour-rooms .chip{background:rgba(11,12,15,.6);backdrop-filter:blur(8px);border-color:rgba(255,255,255,.15)}.tour-rooms .chip.is-on{background:var(--gold);color:#1a1407;border-color:var(--gold)}
+.tour-fade{position:absolute;inset:0;background:#0b0c0f;opacity:0;pointer-events:none;transition:opacity .35s;z-index:2}.tour-fade.is-on{opacity:1}
+.tour-spot{position:absolute;z-index:3;transform:translate(-50%,-50%);width:38px;height:38px;border-radius:50%;border:2px solid #fff;background:rgba(201,168,106,.85);box-shadow:0 0 0 8px rgba(201,168,106,.25);cursor:pointer;display:grid;place-items:center;color:#1a1407;font:600 11px var(--sans);transition:transform .2s}.tour-spot:hover{transform:translate(-50%,-50%) scale(1.12)}
+.tour-spot span{position:absolute;top:44px;left:50%;transform:translateX(-50%);white-space:nowrap;font:500 12px var(--sans);color:#fff;background:rgba(11,12,15,.7);padding:4px 8px;border-radius:999px}
+.tour-badge{position:absolute;right:18px;top:18px;z-index:2;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:#1a1407;background:var(--gold);padding:5px 9px;border-radius:999px}
+.tour-hint{position:absolute;left:18px;bottom:18px;z-index:2;font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink);background:rgba(11,12,15,.6);padding:6px 10px;border-radius:999px;pointer-events:none}
+.explorer-canvas .loading{position:absolute;inset:0;display:grid;place-items:center;color:var(--ink-3);font-size:13px;letter-spacing:.14em;text-transform:uppercase;pointer-events:none}
+.preview-note{position:fixed;left:50%;bottom:16px;transform:translateX(-50%);z-index:60;background:rgba(201,168,106,.95);color:#1a1407;font-size:12px;font-weight:600;padding:8px 14px;border-radius:999px;letter-spacing:.04em;white-space:nowrap}
+@media (max-width:960px){.explorer-grid,.teaser,.contact,.about{grid-template-columns:1fr}.teaser-tour .teaser-visual,.about-card{order:2}.about-card{max-width:320px}.explorer-canvas{min-height:420px}.contact-text{justify-self:start}}
+@media (max-width:720px){.nav nav,.nav-cta{display:none}.burger{display:flex}.nav.is-open nav{display:flex;position:absolute;top:100%;left:0;right:0;flex-direction:column;background:var(--bg);padding:20px var(--pad) 28px;border-bottom:1px solid var(--line);gap:18px;font-size:18px}.contact-form .row{grid-template-columns:1fr}.hero-overlay{padding-bottom:14vh}.scroll-hint{display:none}.about-facts{grid-template-columns:1fr}.lb-prev,.lb-next{top:30vh}.hero-video{height:520vh}.hero-video .hero-sticky{background:#efede8}
+.hero-canvas{position:absolute;inset:0;width:100%;height:100%;display:block;opacity:0;transition:opacity .6s;will-change:contents}.hero-canvas.is-ready{opacity:1}
+.hero-video .hero-overlay{align-items:start;padding-top:16vh}.hero-video .hero-copy{max-width:560px}
+.hero-video h1{color:#15130f}.hero-video h1 span{color:#a8863f}.hero-video .lede{color:#4a463f}.hero-video .eyebrow{color:#a8863f}
+.hero-video .btn-ghost{border-color:rgba(0,0,0,.25);color:#15130f;background:rgba(255,255,255,.4)}
+.hero-video .scroll-hint{color:#6b655b}.hero-video .scroll-hint span{background:linear-gradient(#a8863f,transparent)}
+.nav.on-light:not(.is-solid){color:#15130f}.nav.on-light:not(.is-solid) nav{color:#4a463f}.nav.on-light:not(.is-solid) .brand small{color:#6b655b}
+@media (max-width:720px){.hero-video{height:300vh}.hero-video .hero-overlay{padding-top:12vh}}
+.hero-progress{position:absolute;left:0;right:0;bottom:0;height:3px;background:rgba(0,0,0,.08);z-index:3}.hero-progress span{display:block;height:100%;background:#a8863f;transition:width .2s}
+.map-visual{background:#1b2230 url(map-goettingen.jpg) center/cover no-repeat}#map{position:absolute;inset:0}.maplibregl-ctrl-attrib{font-size:10px}.map-visual::after{content:'';position:absolute;left:0;right:0;bottom:0;height:40%;background:linear-gradient(to top,rgba(11,12,15,.5),transparent);pointer-events:none}
+.map-caption{position:absolute;left:18px;bottom:18px;z-index:2;font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink)}
+.tour-visual{aspect-ratio:16/10;cursor:grab;touch-action:none}#panoCanvas{position:absolute;inset:0;width:100%;height:100%;display:block}.tour-rooms{position:absolute;left:14px;top:14px;z-index:3;display:flex;gap:6px;flex-wrap:wrap}
+.tour-rooms .chip{background:rgba(11,12,15,.6);backdrop-filter:blur(8px);border-color:rgba(255,255,255,.15)}.tour-rooms .chip.is-on{background:var(--gold);color:#1a1407;border-color:var(--gold)}
+.tour-fade{position:absolute;inset:0;background:#0b0c0f;opacity:0;pointer-events:none;transition:opacity .35s;z-index:2}.tour-fade.is-on{opacity:1}
+.tour-spot{position:absolute;z-index:3;transform:translate(-50%,-50%);width:38px;height:38px;border-radius:50%;border:2px solid #fff;background:rgba(201,168,106,.85);box-shadow:0 0 0 8px rgba(201,168,106,.25);cursor:pointer;display:grid;place-items:center;color:#1a1407;font:600 11px var(--sans);transition:transform .2s}.tour-spot:hover{transform:translate(-50%,-50%) scale(1.12)}
+.tour-spot span{position:absolute;top:44px;left:50%;transform:translateX(-50%);white-space:nowrap;font:500 12px var(--sans);color:#fff;background:rgba(11,12,15,.7);padding:4px 8px;border-radius:999px}
+.tour-badge{position:absolute;right:18px;top:18px;z-index:2;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:#1a1407;background:var(--gold);padding:5px 9px;border-radius:999px}
+.tour-hint{position:absolute;left:18px;bottom:18px;z-index:2;font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink);background:rgba(11,12,15,.6);padding:6px 10px;border-radius:999px;pointer-events:none}
+.explorer-canvas .loading{position:absolute;inset:0;display:grid;place-items:center;color:var(--ink-3);font-size:13px;letter-spacing:.14em;text-transform:uppercase;pointer-events:none}
+.preview-note{white-space:normal;text-align:center;left:16px;right:16px;transform:none}}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}.hero-copy,.card,.btn{transition:none}.tour-ring,.scroll-hint span{animation:none}}
+</style>
+</head>
+<body>
+
+<header class="nav" id="nav">
+  <a href="#start" class="brand">ROSS<span>IN</span> <small>Immobilien</small></a>
+  <nav id="navlinks">
+    <a href="#objekte">Objekte</a><a href="#explorer">3D-Ansicht</a><a href="#ueber">Über uns</a><a href="#karte">Karte</a><a href="#kontakt">Kontakt</a>
+  </nav>
+  <a href="#kontakt" class="btn btn-primary btn-sm nav-cta">Beratung</a>
+  <button class="burger" id="burger" aria-label="Menü"><span></span><span></span></button>
+</header>
+
+<main>
+<section class="hero hero-video" id="start">
+  <div class="hero-sticky">
+    <canvas id="heroCanvas" class="hero-canvas"></canvas>
+    <div class="hero-progress" id="heroProgress"><span></span></div>
+    <div class="hero-overlay" id="heroOverlay">
+      <div class="hero-copy is-active">
+        <p class="eyebrow">Rossin Immobilien · Göttingen</p>
+        <h1><span>Persönlich.</span><br>Engagiert. Zuverlässig.</h1>
+        <p class="lede">Immobilienvermittlung in Göttingen und der Region – Gewerbe zur Miete, Wohn- und Geschäftshäuser zum Kauf.</p>
+        <div class="hero-cta"><a class="btn btn-primary" href="#objekte">Objekte ansehen</a><a class="btn btn-ghost" href="#explorer">Haus in 3D erkunden</a></div>
+      </div>
+      <div class="hero-copy">
+        <p class="eyebrow">Ihre Reise</p>
+        <h1><span>Ihre Reise</span><br>beginnt hier.</h1>
+        <p class="lede">Vom ersten Gespräch bis zur Schlüsselübergabe begleiten wir Sie persönlich.</p>
+      </div>
+      <div class="hero-copy">
+        <p class="eyebrow">Erleben</p>
+        <h1><span>Raum,</span><br>der wirkt.</h1>
+        <p class="lede">Wir zeigen Objekte so, wie man sie erlebt – nicht nur, wie sie aussehen.</p>
+      </div>
+      <div class="hero-copy">
+        <p class="eyebrow">Alles aus einer Hand</p>
+        <h1><span>Von der Beratung</span><br>bis zum Abschluss.</h1>
+        <p class="lede">Bewertung, Vermarktung, Verhandlung – mit einem Ansprechpartner.</p>
+      </div>
+      <div class="scroll-hint"><span></span> Scrollen</div>
+    </div>
+  </div>
+</section>
+
+<section class="listings" id="objekte">
+  <div class="section-head"><p class="eyebrow">Aktuelle Objekte</p><h2>Unsere <em>Angebote</em></h2></div>
+  <div class="filters" id="filters"></div>
+  <div class="card-grid" id="cards"></div>
+</section>
+
+<section class="explorer" id="explorer">
+  <div class="section-head">
+    <p class="eyebrow">Interaktiv</p>
+    <h2>Das Objekt <em>in 3D</em> – rundum erleben</h2>
+    <p class="lede">Fotorealistisches 3D-Modell: ziehen zum Drehen, scrollen zum Zoomen. Bereiche links anklicken, die Kamera fliegt hin.</p>
+  </div>
+  <div class="explorer-grid">
+    <div class="explorer-canvas"><canvas id="exCanvas"></canvas><div class="loading" id="exLoading">3D-Modell lädt …</div>
+      <div class="explorer-tools"><button class="chip is-on" id="btnExplode">Etagen trennen</button><button class="chip" id="btnCompact">Kompakt</button></div>
+    </div>
+    <aside class="explorer-panel"><ul class="floor-list" id="floorList"></ul><div class="unit-card" id="unitCard"></div></aside>
+  </div>
+</section>
+
+<section class="about" id="ueber">
+  <div class="about-card"><img src="logo.webp" alt="Rossin Immobilien"></div>
+  <div class="about-text">
+    <p class="eyebrow">Über Rossin Immobilien</p>
+    <h2>Persönlich. Engagiert. <em>Zuverlässig.</em></h2>
+    <p class="lede">Rossin Immobilien steht für persönliche, engagierte und zuverlässige Immobilienvermittlung in Göttingen und der Region. Unser Schwerpunkt liegt auf der Vermietung von Gewerbeimmobilien sowie dem Verkauf von Wohn- und Geschäftshäusern, Einfamilienhäusern und weiteren Wohn- und Gewerbeimmobilien.</p>
+    <p class="lede">Wir begleiten Eigentümer und Interessenten persönlich und kompetent – von der ersten Beratung über die Vermarktung bis zum erfolgreichen Abschluss.</p>
+    <div class="about-facts">
+      <div><strong>Gewerbe</strong><span>Vermietung von Büro-, Laden- und Lagerflächen</span></div>
+      <div><strong>Verkauf</strong><span>Wohn- &amp; Geschäftshäuser, Einfamilienhäuser</span></div>
+      <div><strong>§ 34c GewO</strong><span>Erlaubnis erteilt durch die IHK Hannover</span></div>
+    </div>
+    <p class="about-person"><strong>Ana Lisa Rossin</strong> · Inhaberin</p>
+  </div>
+</section>
+
+<section class="teaser teaser-map" id="karte">
+  <div class="teaser-text">
+    <p class="eyebrow">Standorte</p><h2>Göttingen <em>in 3D</em></h2>
+    <p class="lede">Alle Objekte auf einer interaktiven 3D-Karte – mit Gebäudehöhen, Umgebung und Entfernungen zu Uni, Bahnhof und Innenstadt.</p>
+    <ul class="ticks"><li>Echte Gebäudehöhen aus OpenStreetMap</li><li>Objekte als Pins, Klick öffnet das Exposé</li><li>Drehen, neigen, zoomen</li></ul>
+  </div>
+  <div class="teaser-visual map-visual"><div id="map"></div>
+    <span class="map-caption">Göttingen · 3D-Gebäude · Ziehen zum Bewegen, Strg+Ziehen zum Neigen</span></div>
+</section>
+
+<section class="teaser teaser-tour" id="rundgang">
+  <div class="teaser-visual tour-visual"><canvas id="panoCanvas"></canvas>
+    <div class="tour-rooms" id="tourRooms"></div>
+    <span class="tour-hint" id="tourHint">Ziehen zum Umschauen</span><span class="tour-badge">Beispielobjekt · Villa</span>
+    <div class="tour-fade" id="tourFade"></div></div>
+  <div class="teaser-text">
+    <p class="eyebrow">Virtuelle Besichtigung</p><h2>Rundgang <em>rund um die Uhr</em></h2>
+    <p class="lede">Begehen Sie Räume virtuell – am Laptop, Tablet oder Handy. Beispielobjekt: Wohnzimmer, Küche, Schlafzimmer und Pool-Terrasse – ins Bild ziehen zum Umschauen, auf die goldenen Punkte klicken, um in den nächsten Raum zu gehen.</p>
+    <a class="btn btn-ghost" href="#kontakt" style="margin-top:24px">Zugang anfragen</a>
+  </div>
+</section>
+
+<section class="contact" id="kontakt">
+  <div class="contact-text">
+    <p class="eyebrow">Kontakt</p><h2>Lassen Sie uns <em>sprechen.</em></h2>
+    <p class="lede">Besichtigung, Exposé oder Bewertung Ihrer Immobilie – wir melden uns innerhalb eines Werktags.</p>
+    <address><strong>Rossin Immobilien</strong> · Ana Lisa Rossin<br>Hanssenstr. 10 · 37073 Göttingen<br><a href="tel:+491632618484">+49 163 2618484</a> · <a href="mailto:info@rossin-immobilien.de">info@rossin-immobilien.de</a><br><span class="hours">Mo–Fr 8:00–18:00 Uhr</span></address>
+  </div>
+  <form class="contact-form" id="form" name="kontakt" method="POST" data-netlify="true" netlify-honeypot="bot-field">
+    <input type="hidden" name="form-name" value="kontakt"><p class="hp" style="position:absolute;left:-9999px"><label>Nicht ausfüllen: <input name="bot-field"></label></p>
+    <div class="row"><label>Name<input id="f-name" name="name" required autocomplete="name"></label><label>E-Mail<input id="f-email" name="email" type="email" required autocomplete="email"></label></div>
+    <div class="row"><label>Telefon (optional)<input id="f-tel" name="telefon" type="tel" autocomplete="tel"></label><label>Interesse<select id="f-int" name="interesse"><option>Kaufen</option><option>Mieten</option><option>Verkaufen</option><option>Bewertung</option></select></label></div>
+    <label>Nachricht<textarea id="f-msg" name="nachricht" rows="4" required></textarea></label>
+    <label class="consent"><input id="f-consent" type="checkbox" required> Ich habe die <a href="/datenschutz.html" style="color:var(--gold-2);text-decoration:underline">Datenschutzerklärung</a> gelesen und stimme der Verarbeitung meiner Daten zur Bearbeitung der Anfrage zu.</label>
+    <button class="btn btn-primary" type="submit">Anfrage senden</button>
+    <p class="form-msg" id="formMsg" hidden>Danke! Wir melden uns schnellstmöglich.</p><p class="form-msg" id="formErr" hidden style="color:#f87171">Senden fehlgeschlagen – bitte per E-Mail oder Telefon melden.</p>
+  </form>
+</section>
+</main>
+
+<footer class="footer">
+  <div class="footer-brand"><img src="logo.webp" alt="Rossin Immobilien"><p>Immobilienvermittlung in Göttingen und der Region.<br>Hanssenstr. 10 · 37073 Göttingen</p></div>
+  <div class="footer-links"><a href="/impressum.html">Impressum</a><a href="/datenschutz.html">Datenschutz</a><span>© 2026 Rossin Immobilien</span></div>
+</footer>
+
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"}}</script>
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+
+/* ---------- Daten ---------- */
+const UNITS = [
+  { floor:0, name:'Erdgeschoss', type:'Hochparterre · 2 Wohnungen', size:'—', rooms:'—', price:'—', status:'nicht im Angebot', desc:'Hausflur, Kellerzugang, zwei Wohneinheiten mit Balkon zur Grünfläche.' },
+  { floor:1, name:'1. Obergeschoss', type:'2 Wohnungen', size:'—', rooms:'—', price:'—', status:'nicht im Angebot', desc:'Vermietet. Nicht Teil des aktuellen Angebots.' },
+  { floor:2, name:'2. Obergeschoss', type:'2 Wohnungen', size:'—', rooms:'—', price:'—', status:'nicht im Angebot', desc:'Vermietet. Nicht Teil des aktuellen Angebots.' },
+  { floor:3, name:'3. Obergeschoss', type:'2 Wohnungen', size:'—', rooms:'—', price:'—', status:'nicht im Angebot', desc:'Vermietet. Nicht Teil des aktuellen Angebots.' },
+  { floor:4, name:'4. Obergeschoss', type:'4-Zimmer-Wohnung mit Balkon', size:'ca. 93 m²', rooms:'4', price:'Auf Anfrage', status:'verfügbar', desc:'Wohnen ~20 m², Eltern 12,8 m², zwei Kinderzimmer (11 / 11,3 m²), Essbereich 8 m², Küche 7,6 m², Bad mit Dusche, Gäste-WC, Balkon 3 m² mit Blick ins Grüne.', plan:'objekte/wohnung-goettingen/grundriss.webp' },
+];
+const STATUS_COLOR = { 'verfügbar':'#4ade80', 'reserviert':'#fbbf24', 'vermietet':'#f87171', 'nicht im Angebot':'#6b7280' };
+const G = 'objekte/wohnung-goettingen/';
+const LISTINGS = [
+  { id:1, title:'4-Zimmer-Wohnung mit Balkon im Grünen', location:'Göttingen', type:'Wohnung', price:'Auf Anfrage', size:'ca. 93 m²', rooms:4, tag:'Aktuell', image:G+'aussen.webp', gallery:['essen','kueche','kind','kind2','bad','wc','balkon','grundriss'].map(n=>G+n+'.webp') },
+  { id:2, demo:true, title:'Ladenfläche in zentraler Lage', location:'Göttingen · Innenstadt', type:'Gewerbe', price:'Miete auf Anfrage', size:'85 m²', rooms:2, tag:'Miete', hue:200 },
+  { id:3, demo:true, title:'Bürofläche mit Stellplätzen', location:'Göttingen · Weende', type:'Gewerbe', price:'Miete auf Anfrage', size:'240 m²', rooms:6, tag:'Miete', hue:150 },
+  { id:4, demo:true, title:'Wohn- und Geschäftshaus', location:'Landkreis Göttingen', type:'Anlage', price:'Auf Anfrage', size:'480 m²', rooms:10, tag:'Kapitalanlage', hue:28 },
+  { id:5, demo:true, title:'Einfamilienhaus mit Garten', location:'Göttingen · Grone', type:'Haus', price:'Auf Anfrage', size:'135 m²', rooms:5, tag:'Kauf', hue:45 },
+  { id:6, demo:true, title:'Lager- & Produktionsfläche', location:'Rosdorf', type:'Gewerbe', price:'Miete auf Anfrage', size:'620 m²', rooms:null, tag:'Miete', hue:270 },
+];
+
+/* ---------- 3D: Gebäude ---------- */
+const FLOOR_H = 1.15, W = 6, D = 4.4, GAP = 1.1;
+const mats = () => ({
+  slab: new THREE.MeshStandardMaterial({ color:'#e8e2d6', roughness:.85 }),
+  core: new THREE.MeshStandardMaterial({ color:'#1b1b1f', roughness:.6, metalness:.3 }),
+  facade: new THREE.MeshStandardMaterial({ color:'#b9bcc2', roughness:.95 }),
+  facadeDark: new THREE.MeshStandardMaterial({ color:'#6f757d', roughness:.95 }),
+  win: new THREE.MeshPhysicalMaterial({ color:'#1d2a36', roughness:.1, metalness:.7, transparent:true, opacity:.9 }),
+  frame: new THREE.MeshStandardMaterial({ color:'#f4f4f2', roughness:.6 }),
+  rail: new THREE.MeshStandardMaterial({ color:'#c8c2b6', roughness:.4, metalness:.8, transparent:true, opacity:.8 }),
+  ground: new THREE.MeshStandardMaterial({ color:'#0f1113', roughness:1 }),
+  plaza: new THREE.MeshStandardMaterial({ color:'#2a2d31', roughness:.95 }),
+});
+function box(w,h,d,m,x=0,y=0,z=0,shadow=true){ const o=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),m); o.position.set(x,y,z); o.castShadow=shadow; o.receiveShadow=shadow; return o; }
+
+function makeBuilding(){
+  const M = mats(); const root = new THREE.Group(); const floors=[]; const glows=[];
+  UNITS.forEach((u,i)=>{
+    const g = new THREE.Group(); g.position.y = i*FLOOR_H; g.userData.index=i;
+    const h=FLOOR_H;
+    g.add(box(W+.5,.1,D+.5,M.slab,0,.05,0));
+    g.add(box(W,h-.1,D,M.facade,0,h/2+.05,0));
+    g.add(box(1.8,h-.08,D+.02,M.facadeDark,-W/2+.9,h/2+.05,0,false));
+    // Fenster
+    const put=(n,len,axis,sign)=>{ for(let k=0;k<n;k++){ const t=-len/2+(len/n)*(k+.5); const grp=new THREE.Group();
+      if(axis==='z'){grp.position.set(t,h/2+.05,sign*(D/2+.02));} else {grp.position.set(sign*(W/2+.02),h/2+.05,t); grp.rotation.y=Math.PI/2;}
+      grp.add(box(1,h*.55,.06,M.frame,0,0,0,false)); grp.add(box(.88,h*.47,.04,M.win,0,0,.02,false)); g.add(grp);} };
+    put(4,W,'z',1); put(4,W,'z',-1); put(3,D,'x',1); put(3,D,'x',-1);
+    // Balkon
+    const b=new THREE.Group(); b.position.set(0,.05,D/2+.55); b.add(box(W*.6,.08,1,M.slab)); b.add(box(W*.6,.9,.03,M.rail,0,.5,.48,false)); g.add(b);
+    // Highlight
+    const glow=new THREE.Mesh(new THREE.BoxGeometry(W+.6,h+.05,D+.6), new THREE.MeshBasicMaterial({ color:STATUS_COLOR[u.status], transparent:true, opacity:0, depthWrite:false }));
+    glow.position.y=h/2+.05; glow.userData.isGlow=true; g.add(glow); glows.push(glow);
+    root.add(g); floors.push(g);
+  });
+  const roof=new THREE.Group(); roof.add(box(W+.6,.14,D+.6,M.slab)); roof.add(box(1.2,.5,1.2,M.core,1.4,.3,-.8)); root.add(roof);
+  const plaza=new THREE.Mesh(new THREE.PlaneGeometry(18,14),M.plaza); plaza.rotation.x=-Math.PI/2; plaza.position.y=-.01; plaza.receiveShadow=true; root.add(plaza);
+  const ground=new THREE.Mesh(new THREE.PlaneGeometry(80,80),M.ground); ground.rotation.x=-Math.PI/2; ground.position.y=-.02; ground.receiveShadow=true; root.add(ground);
+  [[-6,-3],[-7,2],[6.5,-4],[7,3.5],[-5,5.5]].forEach(([x,z])=>{ const t=new THREE.Group(); t.position.set(x,0,z);
+    const tr=new THREE.Mesh(new THREE.CylinderGeometry(.07,.1,1.2,6),new THREE.MeshStandardMaterial({color:'#3a2d22'})); tr.position.y=.6;
+    const cr=new THREE.Mesh(new THREE.SphereGeometry(.75,12,10),new THREE.MeshStandardMaterial({color:'#2f5a3a',roughness:1})); cr.position.y=1.7; cr.castShadow=true; t.add(tr,cr); root.add(t); });
+  const state={explode:0, hovered:null, selected:null};
+  const damp=THREE.MathUtils.damp;
+  function update(dt){
+    floors.forEach((g,i)=>{ g.position.y=damp(g.position.y, i*FLOOR_H + i*GAP*state.explode, 6, dt);
+      const active = state.hovered===i || state.selected===i; glows[i].material.opacity=damp(glows[i].material.opacity, active?.35:0, 10, dt); });
+    const n=UNITS.length; roof.position.y=damp(roof.position.y, n*FLOOR_H+FLOOR_H*.25+(n-1)*GAP*state.explode, 6, dt);
+  }
+  return { root, floors, state, update };
+}
+function addLights(scene){
+  scene.add(new THREE.AmbientLight(0xffffff,.35));
+  scene.add(new THREE.HemisphereLight(0x9fb8d4,0x1a1410,.5));
+  const sun=new THREE.DirectionalLight(0xffe9cf,2.2); sun.position.set(8,14,6); sun.castShadow=true; sun.shadow.mapSize.set(2048,2048); sun.shadow.bias=-.0005;
+  Object.assign(sun.shadow.camera,{left:-12,right:12,top:16,bottom:-6}); scene.add(sun);
+  const p1=new THREE.PointLight(0xc9a86a,14,25); p1.position.set(-8,4,-6); scene.add(p1);
+  const p2=new THREE.PointLight(0x6fa8dc,8,20); p2.position.set(6,2,8); scene.add(p2);
+}
+function makeRenderer(canvas){ const r=new THREE.WebGLRenderer({canvas,antialias:true,powerPreference:'high-performance'}); r.setPixelRatio(Math.min(devicePixelRatio,1.5)); r.shadowMap.enabled=true; r.shadowMap.type=THREE.PCFSoftShadowMap; r.toneMapping=THREE.ACESFilmicToneMapping; return r; }
+function fit(r,cam,el){ const w=el.clientWidth,h=el.clientHeight; if(w===0||h===0)return; r.setSize(w,h,false); cam.aspect=w/h; cam.updateProjectionMatrix(); }
+
+/* ---------- Hero: Scroll-Scrub (24 fps, priorisiertes Laden, vorab dekodiert) ---------- */
+(function hero(){
+  const N=241, src=i=>`hero/frames/frame_${String(i+1).padStart(4,'0')}.webp`;
+  const section=document.getElementById('start'), canvas=document.getElementById('heroCanvas'), sticky=canvas.parentElement, bar=document.getElementById('heroProgress');
+  const ctx=canvas.getContext('2d'); const imgs=new Array(N); const ready=new Uint8Array(N); let cur=0, target=0, done=0;
+  const copies=[...section.querySelectorAll('.hero-copy')]; const nav=document.getElementById('nav');
+  const nearest=i=>{ if(ready[i]) return i; for(let d=1;d<N;d++){ if(i-d>=0&&ready[i-d]) return i-d; if(i+d<N&&ready[i+d]) return i+d; } return -1; };
+  function draw(i){ const j=nearest(i); if(j<0) return; const img=imgs[j];
+    const dpr=Math.min(devicePixelRatio||1,1.5), w=sticky.clientWidth, h=sticky.clientHeight;
+    if(canvas.width!==Math.round(w*dpr)||canvas.height!==Math.round(h*dpr)){canvas.width=Math.round(w*dpr);canvas.height=Math.round(h*dpr);}
+    ctx.setTransform(dpr,0,0,dpr,0,0); const s=Math.max(w/img.naturalWidth,h/img.naturalHeight);
+    const dw=img.naturalWidth*s, dh=img.naturalHeight*s; ctx.drawImage(img,(w-dw)/2,(h-dh)/2,dw,dh); }
+  const order=[]; const seen=new Set(); for(const st of [8,4,2,1]) for(let i=0;i<N;i+=st) if(!seen.has(i)){seen.add(i);order.push(i);}
+  let p=0; async function worker(){ while(p<order.length){ const i=order[p++]; const im=new Image(); im.src=src(i); try{ await im.decode(); }catch(e){}
+    imgs[i]=im; ready[i]=1; done++; bar.firstElementChild.style.width=(done/N*100)+'%'; if(done===1){ draw(Math.round(cur)); canvas.classList.add('is-ready'); } if(done===N) bar.remove(); } }
+  for(let k=0;k<6;k++) worker();
+  function onScroll(){ const rect=section.getBoundingClientRect(); const total=section.offsetHeight-innerHeight; const pr=Math.min(1,Math.max(0,-rect.top/total));
+    target=pr*(N-1); const ph=pr<.2?0:pr<.45?1:pr<.75?2:3; copies.forEach((c,i)=>c.classList.toggle('is-active',i===ph)); nav.classList.toggle('on-light', rect.bottom>innerHeight*0.5); }
+  addEventListener('scroll',onScroll,{passive:true}); addEventListener('resize',()=>{onScroll();draw(Math.round(cur));}); onScroll();
+  let last=performance.now(), lastDrawn=-1;
+  (function loop(now){ requestAnimationFrame(loop); const dt=Math.min((now-last)/1000,.05); last=now; const d=target-cur; if(Math.abs(d)<.01) return;
+    cur+=d*(1-Math.exp(-dt*9)); const idx=Math.round(cur); if(idx!==lastDrawn){ lastDrawn=idx; draw(idx); } })(last);
+})();
+
+/* ---------- 360°-Rundgang: mehrere Räume, Hotspots, Überblendung ---------- */
+(function tour(){
+  const ROOMS=[
+    { id:'wohnen', name:'Wohnzimmer', src:'pano-wohnzimmer.jpg', yaw:20, spots:[{to:'kueche',lon:-80,lat:-5},{to:'terrasse',lon:40,lat:-8},{to:'schlafen',lon:160,lat:-4}] },
+    { id:'kueche', name:'Küche', src:'pano-kueche.jpg', yaw:0, spots:[{to:'wohnen',lon:170,lat:-6},{to:'terrasse',lon:60,lat:-8}] },
+    { id:'schlafen', name:'Schlafzimmer', src:'pano-schlafzimmer.jpg', yaw:0, spots:[{to:'wohnen',lon:180,lat:-6},{to:'terrasse',lon:40,lat:-8}] },
+    { id:'terrasse', name:'Pool-Terrasse', src:'pano-terrasse.jpg', yaw:0, spots:[{to:'wohnen',lon:180,lat:-6},{to:'kueche',lon:-120,lat:-6}] },
+  ];
+  const canvas=document.getElementById('panoCanvas'), wrap=canvas.parentElement, fade=document.getElementById('tourFade'), hint=document.getElementById('tourHint'), roomsEl=document.getElementById('tourRooms');
+  const scene=new THREE.Scene(); const cam=new THREE.PerspectiveCamera(80,1,.1,100); cam.position.set(0,0,0.01);
+  const r=new THREE.WebGLRenderer({canvas,antialias:false,powerPreference:'high-performance'}); r.setPixelRatio(Math.min(devicePixelRatio||1,1.5)); r.outputColorSpace=THREE.SRGBColorSpace;
+  const fitP=()=>{ const w=wrap.clientWidth,h=wrap.clientHeight; if(!w||!h) return; r.setSize(w,h,false); cam.aspect=w/h; cam.updateProjectionMatrix(); }; fitP(); addEventListener('resize',fitP);
+  const tl=new THREE.TextureLoader(); const texCache={};
+  const getTex=id=>{ if(!texCache[id]){ const t=tl.load(ROOMS.find(x=>x.id===id).src); t.colorSpace=THREE.SRGBColorSpace; t.minFilter=THREE.LinearFilter; t.generateMipmaps=false; texCache[id]=t; } return texCache[id]; };
+  const mat=new THREE.MeshBasicMaterial({map:getTex('wohnen')}); const geo=new THREE.SphereGeometry(50,48,32); geo.scale(-1,1,1); scene.add(new THREE.Mesh(geo,mat));
+  let cur='wohnen', lon=20, lat=-2, vlon=0, dragging=false, px=0, py=0, idle=0, spotsEls=[];
+  function paintRooms(){ roomsEl.innerHTML=ROOMS.map(x=>`<button class="chip ${x.id===cur?'is-on':''}" data-r="${x.id}">${x.name}</button>`).join(''); hint.textContent='Ziehen zum Umschauen · '+ROOMS.find(x=>x.id===cur).name; }
+  roomsEl.addEventListener('click',e=>{ const b=e.target.closest('button'); if(b&&b.dataset.r!==cur) go(b.dataset.r); });
+  function buildSpots(){ spotsEls.forEach(e=>e.remove()); spotsEls=[]; const room=ROOMS.find(x=>x.id===cur);
+    room.spots.forEach(sp=>{ const el=document.createElement('div'); el.className='tour-spot'; el.innerHTML='➜<span>'+ROOMS.find(x=>x.id===sp.to).name+'</span>'; el.onclick=()=>go(sp.to); wrap.appendChild(el); spotsEls.push(Object.assign(el,{_sp:sp})); }); }
+  function go(id){ if(fade.classList.contains('is-on')) return; fade.classList.add('is-on'); const room=ROOMS.find(x=>x.id===id); getTex(id);
+    setTimeout(()=>{ cur=id; mat.map=getTex(id); mat.needsUpdate=true; lon=room.yaw; lat=-2; vlon=0; idle=0; paintRooms(); buildSpots(); requestAnimationFrame(()=>fade.classList.remove('is-on')); },380); }
+  // Nachbarräume vorladen
+  ROOMS.forEach(x=>getTex(x.id));
+  canvas.addEventListener('pointerdown',e=>{dragging=true;px=e.clientX;py=e.clientY;idle=0;canvas.setPointerCapture(e.pointerId);});
+  canvas.addEventListener('pointermove',e=>{ if(!dragging) return; const dx=e.clientX-px, dy=e.clientY-py; px=e.clientX; py=e.clientY; vlon=-dx*0.1; lon+=vlon; lat=Math.max(-60,Math.min(60,lat+dy*0.1)); });
+  const up=()=>{dragging=false;}; canvas.addEventListener('pointerup',up); canvas.addEventListener('pointercancel',up);
+  canvas.addEventListener('wheel',e=>{ e.preventDefault(); cam.fov=Math.max(50,Math.min(100,cam.fov+e.deltaY*0.03)); cam.updateProjectionMatrix(); },{passive:false});
+  const tmp=new THREE.Vector3();
+  function placeSpots(){ const w=wrap.clientWidth,h=wrap.clientHeight; spotsEls.forEach(el=>{ const sp=el._sp; const phi=THREE.MathUtils.degToRad(90-sp.lat), th=THREE.MathUtils.degToRad(sp.lon);
+      tmp.set(Math.sin(phi)*Math.cos(th),Math.cos(phi),Math.sin(phi)*Math.sin(th)).multiplyScalar(10); const d=tmp.clone().normalize().dot(cam.getWorldDirection(new THREE.Vector3())); tmp.project(cam);
+      if(d<0.15||Math.abs(tmp.x)>1.1||Math.abs(tmp.y)>1.1){ el.style.display='none'; return; } el.style.display=''; el.style.left=((tmp.x+1)/2*w)+'px'; el.style.top=((1-tmp.y)/2*h)+'px'; }); }
+  let last=performance.now();
+  (function frame(now){ requestAnimationFrame(frame); const dt=Math.min((now-last)/1000,.05); last=now; const rc=wrap.getBoundingClientRect(); if(rc.bottom<0||rc.top>innerHeight) return;
+    if(!dragging){ vlon*=0.9; lon+=vlon; idle+=dt; if(idle>3) lon+=dt*2; }
+    const phi=THREE.MathUtils.degToRad(90-lat), theta=THREE.MathUtils.degToRad(lon);
+    cam.lookAt(Math.sin(phi)*Math.cos(theta), Math.cos(phi), Math.sin(phi)*Math.sin(theta)); r.render(scene,cam); placeSpots(); })(last);
+  paintRooms(); buildSpots();
+})();
+
+/* ---------- Explorer: echtes 3D-Modell (GLB) mit Hotspots ---------- */
+(function explorer(){
+  const canvas=document.getElementById('exCanvas'), wrap=canvas.parentElement, loading=document.getElementById('exLoading');
+  const scene=new THREE.Scene(); scene.background=new THREE.Color('#101216');
+  scene.add(new THREE.HemisphereLight(0xfff4e6,0x2a2f3a,1.1));
+  const sun=new THREE.DirectionalLight(0xffe9cf,2.6); sun.position.set(6,9,5); sun.castShadow=true; sun.shadow.mapSize.set(1024,1024); sun.shadow.bias=-.0004; scene.add(sun);
+  const fill=new THREE.PointLight(0xc9a86a,6,20); fill.position.set(-5,3,-4); scene.add(fill);
+  const cam=new THREE.PerspectiveCamera(32,1,.01,100); cam.position.set(2.2,1.5,2.4);
+  const r=makeRenderer(canvas); r.outputColorSpace=THREE.SRGBColorSpace; fit(r,cam,wrap); addEventListener('resize',()=>fit(r,cam,wrap));
+  const ctr=new OrbitControls(cam,canvas); ctr.enablePan=false; ctr.enableDamping=true; ctr.dampingFactor=.06; ctr.minDistance=1.4; ctr.maxDistance=6; ctr.minPolarAngle=.25; ctr.maxPolarAngle=Math.PI/2.05; ctr.autoRotate=true; ctr.autoRotateSpeed=.6; ctr.target.set(0,.05,0);
+  canvas.addEventListener('pointerdown',()=>{ctr.autoRotate=false;});
+  const ground=new THREE.Mesh(new THREE.CircleGeometry(6,64),new THREE.ShadowMaterial({opacity:.35})); ground.rotation.x=-Math.PI/2; ground.position.y=-.27; ground.receiveShadow=true; scene.add(ground);
+  const loader=new GLTFLoader();
+  loader.load('villa.glb', g=>{ const m=g.scene; m.traverse(o=>{ if(o.isMesh){ o.castShadow=true; o.receiveShadow=true; } });
+      const box=new THREE.Box3().setFromObject(m); const c=box.getCenter(new THREE.Vector3()); m.position.sub(c); scene.add(m); loading.remove(); },
+    undefined, e=>{ console.error(e); loading.textContent='Modell konnte nicht geladen werden'; });
+  // Hotspots (Seitenleiste)
+  const SPOTS=[
+    { name:'Wohnen & Essen', type:'Offener Wohnbereich · Kamin', size:'~68 m²', facts:['Glasfront zur Terrasse','Linearer Kamin','Eichenparkett'], desc:'Raumhohe Glasfront, direkter Zugang zum Pool, Essbereich mit Blick in die Hügel.', cam:[2.2,1.4,2.4] },
+    { name:'Pool & Terrasse', type:'Infinity-Pool · Sonnendeck', size:'~120 m²', facts:['Infinity-Pool','Außenküche','Olivenbäume'], desc:'Travertin-Terrasse mit Infinity-Pool, Liegebereich und Abendsonne.', cam:[-2.6,1.2,1.8] },
+    { name:'Obergeschoss', type:'Schlafen · Ankleide · Bad', size:'~95 m²', facts:['Auskragendes Volumen','Dachterrasse','2 Bäder'], desc:'Auskragendes Obergeschoss mit Master-Suite und eigener Dachterrasse.', cam:[1.6,2.6,-1.8] },
+    { name:'Lage & Grundstück', type:'Südhang · ca. 1.200 m²', size:'1.200 m²', facts:['Südausrichtung','Blick ins Tal','Privat'], desc:'Ruhige Hanglage mit freiem Blick, keine Einsicht von Nachbarn.', cam:[0.4,3.4,0.4] },
+  ];
+  const list=document.getElementById('floorList'), card=document.getElementById('unitCard'); let sel=0;
+  function paint(){ list.innerHTML=SPOTS.map((f,i)=>`<li><button class="floor-btn ${sel===i?'is-selected':''}" data-i="${i}"><span class="dot" style="background:#c9a86a"></span><span class="floor-name">${f.name}</span><span class="floor-type">${f.size}</span></button></li>`).join(''); }
+  function select(i){ sel=i; paint(); const u=SPOTS[i]; ctr.autoRotate=false; const to=new THREE.Vector3(...u.cam); flyTo=to;
+    card.innerHTML=`<div class="unit-top"><span class="status" style="--c:#c9a86a">${u.type}</span></div><h3>${u.name}</h3>
+    <dl class="unit-facts">${u.facts.map(f=>`<div><dd>${f}</dd></div>`).join('')}</dl><p class="unit-desc">${u.desc}</p>
+    <div class="unit-actions"><a class="btn btn-primary" href="#kontakt">Exposé anfragen</a><a class="btn btn-ghost" href="#rundgang">360°-Rundgang</a></div>`; }
+  let flyTo=null; list.addEventListener('click',e=>{const b=e.target.closest('button'); if(b) select(+b.dataset.i);});
+  paint(); select(0); ctr.autoRotate=true;
+  document.getElementById('btnExplode').textContent='Automatisch drehen'; document.getElementById('btnCompact').textContent='Stopp';
+  document.getElementById('btnExplode').onclick=function(){ctr.autoRotate=true;this.classList.add('is-on');document.getElementById('btnCompact').classList.remove('is-on');};
+  document.getElementById('btnCompact').onclick=function(){ctr.autoRotate=false;this.classList.add('is-on');document.getElementById('btnExplode').classList.remove('is-on');};
+  const clock=new THREE.Clock();
+  function frame(){ requestAnimationFrame(frame); const dt=Math.min(clock.getDelta(),.05); const rc=wrap.getBoundingClientRect(); if(rc.bottom<0||rc.top>innerHeight) return;
+    if(flyTo){ cam.position.lerp(flyTo,1-Math.pow(0.001,dt)); if(cam.position.distanceTo(flyTo)<.02) flyTo=null; }
+    ctr.update(); r.render(scene,cam); }
+  frame();
+})();
+
+/* ---------- Objekte ---------- */
+(function listings(){
+  const FILTERS=['Alle','Wohnung','Haus','Gewerbe','Anlage']; let f='Alle';
+  const fl=document.getElementById('filters'), grid=document.getElementById('cards');
+  function paint(){ fl.innerHTML=FILTERS.map(x=>`<button class="chip ${f===x?'is-on':''}" data-f="${x}">${x}</button>`).join('');
+    const items=f==='Alle'?LISTINGS:LISTINGS.filter(l=>l.type===f);
+    grid.innerHTML=items.map(l=>`<article class="card ${l.gallery?'has-gallery':''}" data-id="${l.id}"><div class="card-media" style="--h:${l.hue||0}">${l.image?`<img src="${l.image}" alt="${l.title}" loading="lazy">`:'<div class="card-art"></div>'}<span class="card-tag">${l.tag}</span>${l.demo?'<span class="card-demo">Beispiel</span>':''}${l.gallery?`<span class="card-count">${l.gallery.length+1} Fotos</span>`:''}</div>
+      <div class="card-body"><p class="card-loc">${l.location}</p><h3>${l.title}</h3><div class="card-facts"><span>${l.size}</span>${l.rooms?`<span>${l.rooms} Zi.</span>`:''}<span>${l.type}</span></div><div class="card-foot"><strong>${l.price}</strong><a href="#kontakt" class="link">Exposé anfragen →</a></div></div></article>`).join(''); }
+  fl.addEventListener('click',e=>{const b=e.target.closest('button'); if(b){f=b.dataset.f;paint();}});
+  grid.addEventListener('click',e=>{ const m=e.target.closest('.card-media'); if(!m) return; const l=LISTINGS.find(x=>x.id==m.closest('.card').dataset.id); if(l&&l.gallery) openGallery(l); });
+  paint();
+  function openGallery(l){ const imgs=[l.image,...l.gallery]; let i=0; const lb=document.createElement('div'); lb.className='lightbox'; lb.setAttribute('role','dialog');
+    const render=()=>{ lb.innerHTML=`<div class="lightbox-inner"><img src="${imgs[i]}" alt="${l.title} – Bild ${i+1}"><button class="lb-nav lb-prev" aria-label="Zurück">‹</button><button class="lb-nav lb-next" aria-label="Weiter">›</button><button class="lb-close" aria-label="Schließen">×</button><div class="lb-thumbs">${imgs.map((s,k)=>`<button class="${k===i?'is-on':''}" data-k="${k}"><img src="${s}" alt=""></button>`).join('')}</div></div>`; };
+    render(); document.body.appendChild(lb); document.body.style.overflow='hidden';
+    const close=()=>{lb.remove(); document.body.style.overflow=''; removeEventListener('keydown',key);};
+    const key=e=>{ if(e.key==='Escape')close(); if(e.key==='ArrowRight'){i=(i+1)%imgs.length;render();} if(e.key==='ArrowLeft'){i=(i-1+imgs.length)%imgs.length;render();} };
+    addEventListener('keydown',key);
+    lb.addEventListener('click',e=>{ if(e.target===lb||e.target.closest('.lb-close')) return close(); if(e.target.closest('.lb-next')){i=(i+1)%imgs.length;render();} else if(e.target.closest('.lb-prev')){i=(i-1+imgs.length)%imgs.length;render();} else { const t=e.target.closest('.lb-thumbs button'); if(t){i=+t.dataset.k;render();} } });
+  }
+})();
+
+/* ---------- Nav & Form ---------- */
+const nav=document.getElementById('nav'); addEventListener('scroll',()=>nav.classList.toggle('is-solid',scrollY>40),{passive:true});
+document.getElementById('burger').onclick=()=>nav.classList.toggle('is-open'); document.getElementById('navlinks').onclick=()=>nav.classList.remove('is-open');
+document.getElementById('form').addEventListener('submit',async e=>{ e.preventDefault(); const f=e.target; const data=new URLSearchParams(new FormData(f));
+  try{ const res=await fetch('/',{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:data.toString()}); if(!res.ok) throw 0; document.getElementById('formMsg').hidden=false; f.reset(); }catch{ document.getElementById('formErr').hidden=false; } });
+
+/* ---------- Göttingen 3D-Karte (MapLibre + OpenFreeMap, kein Token) ---------- */
+if (window.maplibregl) {
+  const map=new maplibregl.Map({container:'map',style:'https://tiles.openfreemap.org/styles/fiord',center:[9.9358,51.5328],zoom:15.4,pitch:60,bearing:-20,antialias:true,attributionControl:{compact:true}});
+  map.scrollZoom.disable(); map.addControl(new maplibregl.NavigationControl({visualizePitch:true}),'top-right');
+  map.on('load',()=>{
+    const layers=map.getStyle().layers; let labelId; for(const l of layers){ if(l.type==='symbol'&&l.layout&&l.layout['text-field']){labelId=l.id;break;} }
+    map.addLayer({id:'3d-buildings',source:'openmaptiles','source-layer':'building',type:'fill-extrusion',minzoom:13,
+      paint:{'fill-extrusion-color':['interpolate',['linear'],['coalesce',['get','render_height'],12],0,'#3a4150',40,'#5b6475'],
+        'fill-extrusion-height':['coalesce',['get','render_height'],12],'fill-extrusion-base':['coalesce',['get','render_min_height'],0],'fill-extrusion-opacity':0.92}},labelId);
+    // Pins: Objekte (Koordinaten anpassen)
+    const pins=[{p:[9.9389,51.5345],t:'4-Zimmer-Wohnung · Göttingen'},{p:[9.9312,51.5301],t:'Ladenfläche · Innenstadt (Beispiel)'},{p:[9.9451,51.5382],t:'Bürofläche · Weende (Beispiel)'},{p:[9.9275,51.5365],t:'Wohn- und Geschäftshaus (Beispiel)'}];
+    pins.forEach(x=>{ const el=document.createElement('div'); el.style.cssText='width:18px;height:18px;border-radius:50%;background:#c9a86a;box-shadow:0 0 0 6px rgba(201,168,106,.25),0 0 24px #c9a86a;cursor:pointer';
+      new maplibregl.Marker({element:el}).setLngLat(x.p).setPopup(new maplibregl.Popup({offset:18}).setHTML('<strong style="font-family:Inter,sans-serif">'+x.t+'</strong><br><a href="#objekte" style="color:#a8863f">Zum Objekt</a>')).addTo(map); });
+  });
+}
+</script>
+</body>
+</html>
